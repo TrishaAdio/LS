@@ -180,3 +180,96 @@
   .brand__text strong { font-size: 1rem; }
   .content { padding: var(--sp-3) var(--sp-3) var(--sp-7); }
 }
+
+
+/* =========================================================================
+   Glassmorphism layer
+   Frosted, blurred surfaces on nav / floating / overlay elements.
+   Wrapped in @supports so browsers without backdrop-filter keep the solid
+   look (graceful fallback). Dense reading cards stay crisp for legibility.
+   ========================================================================= */
+@supports ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+
+  /* Top navigation */
+  .topbar {
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--glass-bg-soft);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    border-right: 1px solid var(--glass-border);
+  }
+  .side-progress {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-color: var(--glass-border);
+  }
+
+  /* Home chapter cards + intro / revision cards get a frosted panel look */
+  .chapter-card, .intro-card, .revision-card {
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* Sticky exam tab bar → floating frosted pill row */
+  .tabs {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(14px) saturate(170%);
+    backdrop-filter: blur(14px) saturate(170%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--r-lg);
+    padding: 8px;
+    box-shadow: var(--sh-sm);
+  }
+  .tab { background: transparent; border-color: transparent; }
+  .tab:hover { background: var(--glass-hi); }
+  .tab.active { background: var(--accent); border-color: var(--accent); }
+
+  /* Modals: search + bookmarks drawer + generic panel */
+  .search-panel, .drawer, .modal__panel {
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--sh-lg);
+  }
+
+  /* Floating pills / buttons */
+  .quiz-score, .toast {
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid var(--glass-border);
+  }
+  .toast { color: var(--text); }
+  .scroll-top {
+    background: color-mix(in srgb, var(--accent) 80%, transparent);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+    backdrop-filter: blur(8px) saturate(140%);
+  }
+
+  /* On mobile the sidebar sits over content — make it a touch more opaque */
+  @media (max-width: 960px) {
+    .sidebar { background: var(--glass-bg-strong); }
+  }
+}
+
+/* Slightly richer page backdrop so the frosted blur has colour to pick up */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(680px 480px at 88% 12%, color-mix(in srgb, var(--c-purple) 22%, transparent), transparent 70%),
+    radial-gradient(620px 460px at 8% 92%, color-mix(in srgb, var(--c-success) 16%, transparent), transparent 70%);
+  opacity: 0.7;
+}
