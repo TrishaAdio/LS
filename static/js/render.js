@@ -161,6 +161,7 @@ export function renderBlock(b) {
     case "definition": return `
       <div class="block definition">
         <div class="definition__tag">সংজ্ঞা / Definition</div>
+        ${b.intro ? `<div class="definition__intro">${esc(b.intro)}</div>` : ""}
         <div class="definition__term">${esc(b.term)} ${b.en ? `<span class="en">(${esc(b.en)})</span>` : ""}</div>
         ${b.pronunciation ? `<div class="definition__pron">উচ্চারণ: ${esc(b.pronunciation)}</div>` : ""}
         <div class="definition__text">${esc(b.text)}</div>
@@ -271,6 +272,55 @@ export function renderBlock(b) {
         <div class="expandable__body">${(b.blocks || []).map(renderBlock).join("")}</div>
       </div>`;
 
+    /* ---- understand-first pedagogy blocks ---- */
+
+    // Curiosity opener: a real-life scene / question that hooks the student
+    // BEFORE any facts. Should be the first block of most topics.
+    case "hook": return `
+      <div class="block hook">
+        <div class="hook__label">🤔 একটু ভাবো তো…</div>
+        ${(Array.isArray(b.text) ? b.text : [b.text]).filter(Boolean).map(t => `<p class="hook__text">${esc(t)}</p>`).join("")}
+        ${b.think ? `<p class="hook__think">${esc(b.think)}</p>` : ""}
+      </div>`;
+
+    // Word-check: explain scientific jargon the moment it appears, in plain
+    // Bengali. Lighter and friendlier than the formal definition block.
+    case "wordcheck": return `
+      <div class="block wordcheck">
+        <div class="wordcheck__label">🔤 ${esc(b.intro || "নতুন শব্দ? আগে সেটা বুঝে নিই")}</div>
+        <div class="wordcheck__items">
+          ${(b.items || []).map(it => `
+            <div class="wordcheck__item">
+              <div class="wordcheck__word">${esc(it.word)}${it.en ? ` <span class="en">(${esc(it.en)})</span>` : ""}${it.say ? ` <span class="wordcheck__say">উচ্চারণ: ${esc(it.say)}</span>` : ""}</div>
+              <div class="wordcheck__mean">${esc(it.meaning)}</div>
+            </div>`).join("")}
+        </div>
+      </div>`;
+
+    // Understanding ladder: a chain of "why / how / what-if-not" questions,
+    // each with a plain answer, that builds intuition step by step.
+    case "buildup": return `
+      <div class="block buildup">
+        ${b.title ? `<div class="buildup__title">🌱 ${esc(b.title)}</div>` : ""}
+        <div class="buildup__steps">
+          ${(b.steps || []).map(s => `
+            <div class="buildup__step">
+              <div class="buildup__q"><span class="buildup__qbubble">?</span>${esc(s.q)}</div>
+              <div class="buildup__a">${esc(s.a)}</div>
+            </div>`).join("")}
+        </div>
+      </div>`;
+
+    // Story / scenario used to make an idea feel obvious.
+    case "story": return `
+      <div class="block story">
+        <div class="story__icon">🎬</div>
+        <div class="story__body">
+          ${b.title ? `<div class="story__title">${esc(b.title)}</div>` : ""}
+          ${(Array.isArray(b.text) ? b.text : [b.text]).filter(Boolean).map(t => `<p>${esc(t)}</p>`).join("")}
+        </div>
+      </div>`;
+
     default: return "";
   }
 }
@@ -352,7 +402,11 @@ function renderMCQ(q, i) {
       ${q.options.map((opt, j) => `
         <button class="mcq-opt" data-opt="${j}"><span class="mcq-opt__key">${String.fromCharCode(2453 + j)}</span><span>${esc(opt)}</span></button>`).join("")}
     </div>
-    <div class="mcq__explain" hidden><b>ব্যাখ্যা:</b> ${esc(q.explanation)}</div>
+    <div class="mcq__explain" hidden>
+      ${q.concept ? `<div class="mcq__concept">🎯 কোন ধারণা যাচাই হচ্ছে: <b>${esc(q.concept)}</b></div>` : ""}
+      <div class="mcq__why"><b>কেন সঠিক:</b> ${esc(q.explanation)}</div>
+      ${q.whyWrong ? `<div class="mcq__why mcq__why--wrong"><b>অন্যগুলো কেন নয়:</b> ${esc(q.whyWrong)}</div>` : ""}
+    </div>
   </div>`;
 }
 
