@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="মাধ্যমিক জীবনবিজ্ঞান — WBBSE Madhyamik Life Science-এর সহজ, ইন্টার‌্যাকটিভ স্টাডি প্ল্যাটফর্ম। সহজ বাংলায় নোট, পরীক্ষার প্রশ্ন ও রিভিশন।" />
+  <meta name="theme-color" content="#3b82f6" />
+  <title>মাধ্যমিক জীবনবিজ্ঞান | Interactive Study</title>
+
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@400;500;600;700;800&family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}" />
+</head>
+<body>
+  <!-- Reading progress bar -->
+  <div id="reading-progress" class="reading-progress" aria-hidden="true"></div>
+
+  <!-- Top navigation bar -->
+  <header class="topbar" id="topbar">
+    <div class="topbar__inner">
+      <button class="icon-btn topbar__menu" id="menu-toggle" aria-label="মেনু খুলুন">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+
+      <a class="brand" href="#/" data-link>
+        <span class="brand__mark">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <path d="M7 3c5 3 5 15 10 18M17 3C12 6 12 18 7 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M8.5 6h7M8 10h8M8 14h8M8.5 18h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>
+          </svg>
+        </span>
+        <span class="brand__text">
+          <strong>মাধ্যমিক জীবনবিজ্ঞান</strong>
+          <small>WBBSE · সহজ ভাষায় গভীর বোঝাপড়া</small>
+        </span>
+      </a>
+
+      <div class="topbar__actions">
+        <button class="icon-btn" id="search-open" aria-label="খুঁজুন" title="খুঁজুন (/)">
+          <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn" id="bookmarks-open" aria-label="বুকমার্ক" title="বুকমার্ক">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 3h12a1 1 0 011 1v17l-7-4-7 4V4a1 1 0 011-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="icon-btn" id="theme-toggle" aria-label="ডার্ক মোড" title="ডার্ক / লাইট মোড">
+          <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20"><path d="M20 14.5A8 8 0 019.5 4a7 7 0 108.9 10.5 8.2 8.2 0 001.6 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="overlay" id="overlay" hidden></div>
+
+  <div class="shell">
+    <!-- Sidebar / responsive navigation -->
+    <aside class="sidebar" id="sidebar" aria-label="অধ্যায় তালিকা">
+      <div class="sidebar__scroll" id="sidebar-content">
+        <!-- populated by JS -->
+      </div>
+    </aside>
+
+    <!-- Main content area -->
+    <main class="content" id="app" tabindex="-1">
+      <!-- routed views render here -->
+      <div class="loader" id="initial-loader">
+        <div class="loader__spinner"></div>
+        <p>লোড হচ্ছে…</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Scroll to top -->
+  <button class="scroll-top" id="scroll-top" aria-label="উপরে যান" hidden>
+    <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 19V5M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <!-- Search modal -->
+  <div class="modal" id="search-modal" hidden>
+    <div class="modal__backdrop" data-close-search></div>
+    <div class="modal__panel search-panel" role="dialog" aria-modal="true" aria-label="খুঁজুন">
+      <div class="search-panel__head">
+        <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" id="search-input" placeholder="টপিক, সংজ্ঞা বা কীওয়ার্ড খুঁজুন…" autocomplete="off" />
+        <button class="icon-btn" data-close-search aria-label="বন্ধ করুন">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="search-panel__results" id="search-results">
+        <p class="search-panel__hint">টাইপ করে যে-কোনো টপিক বা ধারণা খুঁজুন।</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bookmarks drawer -->
+  <div class="modal" id="bookmarks-modal" hidden>
+    <div class="modal__backdrop" data-close-bookmarks></div>
+    <div class="modal__panel drawer" role="dialog" aria-modal="true" aria-label="বুকমার্ক">
+      <div class="drawer__head">
+        <h3>আমার বুকমার্ক</h3>
+        <button class="icon-btn" data-close-bookmarks aria-label="বন্ধ করুন">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="drawer__body" id="bookmarks-list"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
