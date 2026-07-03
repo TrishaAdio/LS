@@ -364,6 +364,7 @@
         {
           "type": "diagram",
           "ref": "miller-urey",
+          "animate": true,
           "caption": "চিত্র ৪.৪ — মিলার ও উরের যন্ত্র (সরল করে)",
           "labels": [
             "গ্যাস চেম্বার: CH₄·NH₃·H₂·বাষ্প",

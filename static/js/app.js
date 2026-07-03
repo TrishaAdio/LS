@@ -211,6 +211,20 @@ app.addEventListener("click", (e) => {
   const fc = e.target.closest("[data-flashcard]");
   if (fc) { fc.classList.toggle("flipped"); return; }
 
+  // Animated diagram: (re)play the step sequence
+  const ap = e.target.closest("[data-anim-replay]");
+  if (ap) {
+    const canvas = ap.closest(".figure--anim")?.querySelector("[data-anim-canvas]");
+    if (canvas) {
+      canvas.classList.remove("playing");
+      void canvas.offsetWidth;           // force reflow so CSS animations restart from 0
+      canvas.classList.add("playing");
+      const lbl = ap.querySelector("span");
+      if (lbl) lbl.textContent = "আবার চালাও";
+    }
+    return;
+  }
+
   // Revision checklist toggle
   const chk = e.target.closest("[data-check]");
   if (chk) { handleChecklist(chk); return; }

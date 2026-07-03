@@ -4,6 +4,7 @@
    ========================================================================= */
 import { diagrams } from "./diagrams.js";
 import { figures } from "./figures.js";
+import { animations } from "./animations.js";
 import { progress, bookmarks, revChecklist, lastRead } from "./store.js";
 
 /* --------------------------- helpers --------------------------- */
@@ -243,11 +244,29 @@ export function renderBlock(b) {
       </div>`;
 
     case "diagram": {
+      const anim = (b.animate && animations[b.ref]) ? animations[b.ref] : null;
       const fig = figures[b.ref];
       const labels = (b.labels && b.labels.length)
         ? `<div class="figure__labels">${b.labels.map(l => `<span class="figure__label">${esc(l)}</span>`).join("")}</div>` : "";
       const caption = b.caption ? `<figcaption class="figure__caption">${esc(b.caption)}</figcaption>` : "";
       const explain = b.explanation ? `<div class="figure__explain">${esc(b.explanation)}</div>` : "";
+      // Animated variant (opt-in via "animate": true). Resting state is the
+      // full diagram; @media reduced-motion + no-anim fallback keep it safe.
+      if (anim) {
+        return `
+        <figure class="block figure figure--anim">
+          <div class="figure__canvas figure__canvas--anim${b.autoplay ? " playing" : ""}" data-anim-canvas>${anim.svg}</div>
+          <div class="figure__anim-controls">
+            <button class="anim-btn" data-anim-replay type="button" aria-label="অ্যানিমেশন চালাও">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+              <span>অ্যানিমেশন চালাও</span>
+            </button>
+          </div>
+          ${caption}
+          ${labels}
+          ${explain}
+        </figure>`;
+      }
       if (fig) {
         const credit = `<div class="figure__credit">চিত্র: <a href="${esc(fig.source)}" target="_blank" rel="noopener noreferrer">${esc(fig.artist)}</a>${fig.license ? ` · ${fig.licenseUrl ? `<a href="${esc(fig.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(fig.license)}</a>` : esc(fig.license)}` : ""} · Wikimedia Commons</div>`;
         return `
