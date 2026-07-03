@@ -3,6 +3,7 @@
    Interactivity is wired via event delegation in app.js.
    ========================================================================= */
 import { diagrams } from "./diagrams.js";
+import { figures } from "./figures.js";
 import { progress, bookmarks, revChecklist, lastRead } from "./store.js";
 
 /* --------------------------- helpers --------------------------- */
@@ -242,13 +243,29 @@ export function renderBlock(b) {
       </div>`;
 
     case "diagram": {
+      const fig = figures[b.ref];
+      const labels = (b.labels && b.labels.length)
+        ? `<div class="figure__labels">${b.labels.map(l => `<span class="figure__label">${esc(l)}</span>`).join("")}</div>` : "";
+      const caption = b.caption ? `<figcaption class="figure__caption">${esc(b.caption)}</figcaption>` : "";
+      const explain = b.explanation ? `<div class="figure__explain">${esc(b.explanation)}</div>` : "";
+      if (fig) {
+        const credit = `<div class="figure__credit">চিত্র: <a href="${esc(fig.source)}" target="_blank" rel="noopener noreferrer">${esc(fig.artist)}</a>${fig.license ? ` · ${fig.licenseUrl ? `<a href="${esc(fig.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(fig.license)}</a>` : esc(fig.license)}` : ""} · Wikimedia Commons</div>`;
+        return `
+        <figure class="block figure figure--photo">
+          <div class="figure__canvas figure__canvas--img"><img src="${esc(fig.img)}" alt="${esc(b.caption || b.ref)}" loading="lazy" decoding="async" /></div>
+          ${caption}
+          ${labels}
+          ${explain}
+          ${credit}
+        </figure>`;
+      }
       const svg = diagrams[b.ref] || `<div class="empty">চিত্র পাওয়া যায়নি</div>`;
       return `
       <figure class="block figure">
         <div class="figure__canvas">${svg}</div>
-        ${b.caption ? `<figcaption class="figure__caption">${esc(b.caption)}</figcaption>` : ""}
-        ${(b.labels && b.labels.length) ? `<div class="figure__labels">${b.labels.map(l => `<span class="figure__label">${esc(l)}</span>`).join("")}</div>` : ""}
-        ${b.explanation ? `<div class="figure__explain">${esc(b.explanation)}</div>` : ""}
+        ${caption}
+        ${labels}
+        ${explain}
       </figure>`;
     }
 
