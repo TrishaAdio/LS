@@ -57,3 +57,35 @@ export const bookmarks = {
     write("bookmarks", this.all().filter(b => !(b.slug === slug && b.topicId === topicId)));
   },
 };
+
+
+/* ---------------- Revision checklist ----------------
+   Shape: { [chapterSlug]: [indices...] } */
+export const revChecklist = {
+  all() { return read("revcheck", {}); },
+  get(slug) { return this.all()[slug] || []; },
+  toggle(slug, index) {
+    const all = this.all();
+    const list = all[slug] || [];
+    const i = list.indexOf(index);
+    if (i >= 0) list.splice(i, 1); else list.push(index);
+    all[slug] = list;
+    write("revcheck", all);
+    return i < 0; // true if now checked
+  },
+};
+
+/* ---------------- Reading preferences ----------------
+   fontScale & lineScale are multipliers; focus is a boolean. */
+export const readingPrefs = {
+  get() { return read("reading", { fontScale: 1, lineScale: 1, focus: false }); },
+  set(v) { write("reading", { ...this.get(), ...v }); return this.get(); },
+};
+
+/* ---------------- Resume reading ----------------
+   Last meaningfully-viewed topic per chapter (single most-recent). */
+export const lastRead = {
+  get() { return read("lastread", null); },
+  set(entry) { write("lastread", entry); },
+  clear() { write("lastread", null); },
+};
