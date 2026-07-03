@@ -3,7 +3,7 @@
    reading progress, and all delegated interactivity.
    ========================================================================= */
 import { api } from "./api.js";
-import { theme, progress, bookmarks } from "./store.js";
+import { theme, progress, bookmarks, revChecklist, readingPrefs, lastRead } from "./store.js";
 import * as R from "./render.js";
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -133,6 +133,14 @@ function observeTopics(slug) {
         const link = $(`.toc-link[data-toc="${CSS.escape(id)}"]`);
         if (link) link.classList.add("active");
         // Mark read after it has been meaningfully viewed
+        // Always remember the most recently viewed topic for "resume reading"
+        const topicEl = e.target;
+        const titleEl = topicEl.querySelector(".topic__titles h2");
+        lastRead.set({
+          slug, topicId: id,
+          title: titleEl ? titleEl.textContent.trim() : "",
+          chapterTitle: currentChapter ? currentChapter.meta.title : "",
+        });
         if (e.intersectionRatio > 0.35 && !progress.isRead(slug, id)) {
           progress.markRead(slug, id);
           refreshProgressUI(slug);
@@ -198,7 +206,27 @@ app.addEventListener("click", (e) => {
   // Bookmark toggle
   const bm = e.target.closest("[data-bookmark]");
   if (bm) { handleBookmark(bm); return; }
+
+  // Flashcard flip
+  const fc = e.target.closest("[data-flashcard]");
+  if (fc) { fc.classList.toggle("flipped"); return; }
+
+  // Revision checklist toggle
+  const chk = e.target.closest("[data-check]");
+  if (chk) { handleChecklist(chk); return; }
 });
+
+function handleChecklist(btn) {
+  const list = btn.closest("[data-checklist]");
+  if (!list) return;
+  const slug = list.dataset.checklist;
+  const idx = Number(btn.dataset.check);
+  const nowChecked = revChecklist.toggle(slug, idx);
+  btn.setAttribute("aria-checked", String(nowChecked));
+  btn.closest(".checklist__item").classList.toggle("done", nowChecked);
+  const countEl = list.parentElement.querySelector("[data-checklist-count]");
+  if (countEl) countEl.textContent = revChecklist.get(slug).length;
+}
 
 function handleMCQ(opt) {
   const mcq = opt.closest(".mcq");
@@ -383,8 +411,119 @@ function toast(msg) {
 }
 
 /* ============================================================
+   READING SETTINGS (font size, line spacing, focus mode)
+   ============================================================ */
+const FONT_MIN = 0.9, FONT_MAX = 1.35, LINE_MIN = 0.85, LINE_MAX = 1.3;
+function applyReadingPrefs() {
+  const p = readingPrefs.get();
+  // Font: base 1.02rem scaled by fontScale.
+  document.documentElement.style.setProperty("--fs-base", (1.02 * p.fontScale).toFixed(3) + "rem");
+  // Line height: base 1.85 shifted by lineScale (1 = default).
+  document.documentElement.style.setProperty("--leading", (1.85 * p.lineScale).toFixed(3));
+  document.body.classList.toggle("focus-mode", !!p.focus);
+  const fl = $("#rs-font-val"), ll = $("#rs-line-val"), fb = $("#rs-focus");
+  if (fl) fl.textContent = Math.round(p.fontScale * 100) + "%";
+  if (ll) ll.textContent = Math.round(p.lineScale * 100) + "%";
+  if (fb) fb.setAttribute("aria-pressed", String(!!p.focus));
+}
+function wireReadingSettings() {
+  const btn = $("#reading-settings-open");
+  const panel = $("#reading-settings");
+  if (!btn || !panel) return;
+  const toggle = (show) => { panel.hidden = show === undefined ? !panel.hidden : !show; btn.setAttribute("aria-expanded", String(!panel.hidden)); };
+  btn.addEventListener("click", (e) => { e.stopPropagation(); toggle(); });
+  document.addEventListener("click", (e) => { if (!panel.hidden && !panel.contains(e.target) && e.target !== btn) toggle(false); });
+  panel.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-rs]"); if (!a) return;
+    const p = readingPrefs.get();
+    const step = 0.05;
+    switch (a.dataset.rs) {
+      case "font-inc": readingPrefs.set({ fontScale: Math.min(FONT_MAX, +(p.fontScale + step).toFixed(2)) }); break;
+      case "font-dec": readingPrefs.set({ fontScale: Math.max(FONT_MIN, +(p.fontScale - step).toFixed(2)) }); break;
+      case "line-inc": readingPrefs.set({ lineScale: Math.min(LINE_MAX, +(p.lineScale + step).toFixed(2)) }); break;
+      case "line-dec": readingPrefs.set({ lineScale: Math.max(LINE_MIN, +(p.lineScale - step).toFixed(2)) }); break;
+      case "focus": readingPrefs.set({ focus: !p.focus }); break;
+      case "reset": readingPrefs.set({ fontScale: 1, lineScale: 1, focus: false }); break;
+    }
+    applyReadingPrefs();
+  });
+}
+
+/* ============================================================
+   CURSOR GLOW (soft mouse-follow spotlight)
+   ============================================================ */
+function initCursorGlow() {
+  const fine = window.matchMedia("(pointer: fine)").matches;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!fine || reduced) return;
+  const glow = document.createElement("div");
+  glow.className = "cursor-glow";
+  glow.setAttribute("aria-hidden", "true");
+  document.body.appendChild(glow);
+  let tx = 0, ty = 0, x = 0, y = 0, raf = null;
+  const loop = () => {
+    x += (tx - x) * 0.18; y += (ty - y) * 0.18;
+    glow.style.transform = `translate(${x}px, ${y}px)`;
+    if (Math.abs(tx - x) > 0.5 || Math.abs(ty - y) > 0.5) raf = requestAnimationFrame(loop);
+    else raf = null;
+  };
+  window.addEventListener("pointermove", (e) => {
+    tx = e.clientX; ty = e.clientY;
+    glow.style.opacity = "1";
+    if (!raf) raf = requestAnimationFrame(loop);
+  }, { passive: true });
+  window.addEventListener("pointerdown", () => glow.classList.add("cursor-glow--tap"));
+  window.addEventListener("pointerup", () => glow.classList.remove("cursor-glow--tap"));
+  document.addEventListener("mouseleave", () => { glow.style.opacity = "0"; });
+}
+
+/* ============================================================
+   RIPPLE + MAGNETIC BUTTONS
+   ============================================================ */
+function initRipple() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.addEventListener("pointerdown", (e) => {
+    const el = e.target.closest(".btn, .mcq-opt, .tab, .chapter-card, .qa__toggle, .expandable__btn, .rs-btn, .resume-card");
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const span = document.createElement("span");
+    span.className = "ripple";
+    const size = Math.max(r.width, r.height);
+    span.style.width = span.style.height = size + "px";
+    span.style.left = (e.clientX - r.left - size / 2) + "px";
+    span.style.top = (e.clientY - r.top - size / 2) + "px";
+    const prevPos = getComputedStyle(el).position;
+    if (prevPos === "static") el.style.position = "relative";
+    el.appendChild(span);
+    setTimeout(() => span.remove(), 620);
+  }, { passive: true });
+}
+function initMagnetic() {
+  const fine = window.matchMedia("(pointer: fine)").matches;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!fine || reduced) return;
+  document.addEventListener("pointermove", (e) => {
+    const el = e.target.closest(".icon-btn, .btn--primary, .scroll-top");
+    if (!el) { return; }
+    const r = el.getBoundingClientRect();
+    const mx = e.clientX - (r.left + r.width / 2);
+    const my = e.clientY - (r.top + r.height / 2);
+    el.style.transform = `translate(${mx * 0.22}px, ${my * 0.22}px)`;
+  }, { passive: true });
+  document.addEventListener("pointerout", (e) => {
+    const el = e.target.closest(".icon-btn, .btn--primary, .scroll-top");
+    if (el) el.style.transform = "";
+  }, { passive: true });
+}
+
+/* ============================================================
    BOOT
    ============================================================ */
 initTheme();
+applyReadingPrefs();
+wireReadingSettings();
+initCursorGlow();
+initRipple();
+initMagnetic();
 window.addEventListener("hashchange", router);
 router();

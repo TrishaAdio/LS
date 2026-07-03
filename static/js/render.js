@@ -3,7 +3,7 @@
    Interactivity is wired via event delegation in app.js.
    ========================================================================= */
 import { diagrams } from "./diagrams.js";
-import { progress, bookmarks } from "./store.js";
+import { progress, bookmarks, revChecklist, lastRead } from "./store.js";
 
 /* --------------------------- helpers --------------------------- */
 export function esc(s = "") {
@@ -62,6 +62,8 @@ export function renderHome(manifest) {
       </div>
     </section>
 
+    ${renderResume()}
+
     <h2 class="section-title"><span class="bar"></span> অধ্যায়সমূহ</h2>
     <div class="card-grid">${cards || emptyState("এখনও কোনো অধ্যায় যোগ করা হয়নি।")}</div>
 
@@ -72,6 +74,22 @@ export function renderHome(manifest) {
       ${featureCard(icon.brain, "রিভিশন", "শেষ মুহূর্তের রিভিশন, মূল সংজ্ঞা ও মনে রাখার কৌশল এক জায়গায়।")}
     </div>
   </div>`;
+}
+function renderResume() {
+  const last = lastRead.get();
+  if (!last || !last.slug || !last.topicId) return "";
+  return `
+  <a class="resume-card" href="#/chapter/${esc(last.slug)}#topic-${esc(last.topicId)}" data-link>
+    <div class="resume-card__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+    </div>
+    <div class="resume-card__body">
+      <div class="resume-card__label">যেখানে থেমেছিলে — পড়া চালিয়ে যাও</div>
+      <div class="resume-card__title">${esc(last.title || "")}</div>
+      <div class="resume-card__sub">${esc(last.chapterTitle || "")}</div>
+    </div>
+    <svg class="resume-card__arrow" viewBox="0 0 24 24" width="22" height="22"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>`;
 }
 function featureCard(ic, t, d) {
   return `<div class="chapter-card" style="cursor:default"><div class="chapter-card__num">${ic}</div><h3 style="margin-top:12px">${t}</h3><p class="chapter-card__sub">${d}</p></div>`;
@@ -100,6 +118,7 @@ export function renderChapter(data, manifest) {
         <span class="chip">${(data.topics || []).length} টি টপিক</span>
         <span class="chip">≈ ${esc(m.estimatedMinutes || 0)} মিনিট</span>
         ${m.pages ? `<span class="chip">পৃষ্ঠা ${esc(m.pages)}</span>` : ""}
+        ${m.complete ? `<span class="chip chip--done"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 12l5 5L20 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg> সম্পূর্ণ অধ্যায়</span>` : ""}
       </div>
     </div>
 
@@ -109,7 +128,7 @@ export function renderChapter(data, manifest) {
     <div id="topics-root">${topicsHtml}</div>
 
     ${renderExam(data.exam)}
-    ${renderRevision(data.revision)}
+    ${renderRevision(data.revision, m.slug)}
     ${renderChapterNav(m, manifest)}
   </div>`;
 }
@@ -311,6 +330,22 @@ export function renderBlock(b) {
         </div>
       </div>`;
 
+    // Flashcards: click a card to flip and reveal the answer. Great for
+    // quick self-testing of names / facts.
+    case "flashcards": return `
+      <div class="block flashcards-block">
+        ${b.title ? `<div class="flashcards-block__title">🃏 ${esc(b.title)}</div>` : ""}
+        <div class="flashcards">
+          ${(b.cards || []).map(c => `
+            <button class="flashcard" data-flashcard type="button" aria-label="কার্ড উলটে উত্তর দেখো">
+              <div class="flashcard__inner">
+                <div class="flashcard__face flashcard__front"><span>${esc(c.front)}</span><em class="flashcard__hint">উত্তর দেখতে ক্লিক করো</em></div>
+                <div class="flashcard__face flashcard__back"><span>${esc(c.back)}</span></div>
+              </div>
+            </button>`).join("")}
+        </div>
+      </div>`;
+
     // Story / scenario used to make an idea feel obvious.
     case "story": return `
       <div class="block story">
@@ -438,8 +473,9 @@ function renderMatch(data) {
 /* ============================================================
    REVISION
    ============================================================ */
-export function renderRevision(rev) {
+export function renderRevision(rev, slug) {
   if (!rev) return "";
+  const checked = revChecklist.get(slug);
   return `
   <div id="revision">
     <h2 class="section-title"><span class="bar"></span> রিভিশন জোন</h2>
@@ -454,8 +490,15 @@ export function renderRevision(rev) {
     </div>` : ""}
     ${(rev.mustRemember && rev.mustRemember.length) ? `
     <div class="revision-card">
-      <h3>⭐ অবশ্যই মনে রাখবে</h3>
-      <ul class="remember-list">${rev.mustRemember.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+      <h3>⭐ রিভিশন চেকলিস্ট — টিক দিয়ে এগোও</h3>
+      <ul class="remember-list checklist" data-checklist="${esc(slug)}">${rev.mustRemember.map((x, i) => `
+        <li class="checklist__item ${checked.includes(i) ? "done" : ""}">
+          <button class="checklist__box" data-check="${i}" role="checkbox" aria-checked="${checked.includes(i)}" aria-label="সম্পন্ন">
+            <svg viewBox="0 0 24 24" width="15" height="15"><path d="M5 12l5 5L20 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span>${esc(x)}</span>
+        </li>`).join("")}</ul>
+      <div class="checklist__progress"><span data-checklist-count>${checked.length}</span> / ${rev.mustRemember.length} সম্পন্ন</div>
     </div>` : ""}
     ${rev.lastMinute ? `<div class="lastminute"><h3>⏱️ শেষ মুহূর্তের রিভিশন</h3><p style="color:var(--text-soft)">${esc(rev.lastMinute)}</p></div>` : ""}
   </div>`;

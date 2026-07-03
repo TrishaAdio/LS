@@ -48,6 +48,35 @@
         <button class="icon-btn" id="bookmarks-open" aria-label="বুকমার্ক" title="বুকমার্ক">
           <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 3h12a1 1 0 011 1v17l-7-4-7 4V4a1 1 0 011-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
         </button>
+        <div class="rs-wrap">
+          <button class="icon-btn" id="reading-settings-open" aria-label="পড়ার সেটিংস" title="পড়ার সেটিংস (ফন্ট, ফোকাস মোড)" aria-expanded="false" aria-haspopup="true">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 4v16M6 4l4 4M18 20V4M18 20l-4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 8h4M14 16h6M4 14h6M15 8h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".55"/></svg>
+          </button>
+          <div class="rs-panel" id="reading-settings" role="dialog" aria-label="পড়ার সেটিংস" hidden>
+            <div class="rs-panel__title">পড়ার সেটিংস</div>
+            <div class="rs-row">
+              <span class="rs-row__label">লেখার আকার</span>
+              <div class="rs-stepper">
+                <button class="rs-btn" data-rs="font-dec" aria-label="ছোট করো">A−</button>
+                <span class="rs-val" id="rs-font-val">100%</span>
+                <button class="rs-btn" data-rs="font-inc" aria-label="বড় করো">A+</button>
+              </div>
+            </div>
+            <div class="rs-row">
+              <span class="rs-row__label">লাইনের ফাঁক</span>
+              <div class="rs-stepper">
+                <button class="rs-btn" data-rs="line-dec" aria-label="কমাও">−</button>
+                <span class="rs-val" id="rs-line-val">100%</span>
+                <button class="rs-btn" data-rs="line-inc" aria-label="বাড়াও">+</button>
+              </div>
+            </div>
+            <div class="rs-row">
+              <span class="rs-row__label">ফোকাস মোড</span>
+              <button class="rs-toggle" id="rs-focus" data-rs="focus" role="switch" aria-pressed="false"><span class="rs-toggle__dot"></span></button>
+            </div>
+            <button class="rs-reset" data-rs="reset">ডিফল্টে ফেরাও</button>
+          </div>
+        </div>
         <button class="icon-btn" id="theme-toggle" aria-label="ডার্ক মোড" title="ডার্ক / লাইট মোড">
           <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20"><path d="M20 14.5A8 8 0 019.5 4a7 7 0 108.9 10.5 8.2 8.2 0 001.6 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
