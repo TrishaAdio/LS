@@ -430,9 +430,17 @@ function wireReadingSettings() {
   const btn = $("#reading-settings-open");
   const panel = $("#reading-settings");
   if (!btn || !panel) return;
-  const toggle = (show) => { panel.hidden = show === undefined ? !panel.hidden : !show; btn.setAttribute("aria-expanded", String(!panel.hidden)); };
-  btn.addEventListener("click", (e) => { e.stopPropagation(); toggle(); });
-  document.addEventListener("click", (e) => { if (!panel.hidden && !panel.contains(e.target) && e.target !== btn) toggle(false); });
+  const setOpen = (open) => { panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); };
+  // Button toggles the panel open/closed (works even when the inner SVG is clicked).
+  btn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); setOpen(panel.hidden); });
+  // Click anywhere outside the button/panel closes it.
+  document.addEventListener("click", (e) => {
+    if (panel.hidden) return;
+    if (btn.contains(e.target) || panel.contains(e.target)) return;
+    setOpen(false);
+  });
+  // Escape closes it too.
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) setOpen(false); });
   panel.addEventListener("click", (e) => {
     const a = e.target.closest("[data-rs]"); if (!a) return;
     const p = readingPrefs.get();
