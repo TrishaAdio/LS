@@ -17,3 +17,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+
+# Analytics DB (first-party visit tracking)
+data/
+*.db
