@@ -656,3 +656,23 @@ body.focus-mode #topics-root:hover .topic:hover { opacity: 1; filter: none; }
 
 /* Clip ripple within its host */
 .btn, .mcq-opt, .tab, .chapter-card, .qa__toggle, .expandable__btn, .rs-btn, .resume-card { overflow: hidden; }
+
+
+/* ---- Photo-based diagrams (real images from Wikimedia Commons) ---- */
+.figure__canvas--img {
+  display: flex; justify-content: center; align-items: center;
+  padding: var(--sp-3); background: #fff; border-radius: var(--r-md);
+}
+[data-theme="dark"] .figure__canvas--img { background: #f3f5f9; }
+.figure__canvas--img img {
+  max-width: 100%; max-height: 460px; width: auto; height: auto;
+  border-radius: var(--r-sm); display: block;
+  transition: transform var(--dur) var(--ease);
+}
+.figure--photo:hover .figure__canvas--img img { transform: scale(1.015); }
+.figure__credit {
+  margin-top: var(--sp-2); font-family: var(--font-en);
+  font-size: var(--fs-xs); color: var(--text-mute); text-align: right;
+}
+.figure__credit a { color: var(--text-soft); text-decoration: underline; }
+.figure__credit a:hover { color: var(--accent-strong); }
