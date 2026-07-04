@@ -495,9 +495,9 @@ export function renderExam(exam) {
 function examPanel(id, data) {
   switch (id) {
     case "mcq": return data.map((q, i) => renderMCQ(q, i)).join("") + `<div class="quiz-score" id="quiz-score" hidden>স্কোর: <b><span id="quiz-correct">0</span></b> / ${data.length}</div>`;
-    case "vshort":
-    case "short":
-    case "long": return data.map((q, i) => renderQA(q, i)).join("");
+    case "vshort": return data.map((q, i) => renderQA(q, i, "vshort")).join("");
+    case "short": return data.map((q, i) => renderQA(q, i, "short")).join("");
+    case "long": return data.map((q, i) => renderQA(q, i, "long")).join("");
     case "fib": return `<div class="card">${data.map((q, i) => `
       <div class="fib"><span class="fib__n">${i + 1}.</span><div><div class="fib__q">${esc(q.q)}</div>
       <button class="qa__toggle" data-reveal="fib-${i}">উত্তর দেখাও</button>
