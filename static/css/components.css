@@ -584,6 +584,7 @@ table.data tbody tr:hover { background: var(--accent-soft); }
 
 /* ---- Reading settings popover ---- */
 .rs-wrap { position: relative; display: inline-flex; }
+.rs-panel[hidden] { display: none; }
 .rs-panel {
   position: absolute; top: calc(100% + 12px); right: 0; z-index: 60;
   width: 260px; padding: var(--sp-4);
