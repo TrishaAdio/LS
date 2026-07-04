@@ -57,6 +57,8 @@ async function router() {
   try {
     if (parts[0] === "chapter" && parts[1]) {
       await showChapter(decodeURIComponent(parts[1]), anchor);
+    } else if (parts[0] === "subject" && parts[1]) {
+      await showSubject(decodeURIComponent(parts[1]));
     } else {
       await showHome();
     }
@@ -76,6 +78,17 @@ async function showHome() {
   document.title = `${manifest.site.title} | Interactive Study`;
   app.innerHTML = R.renderHome(manifest);
   sidebarContent.innerHTML = R.renderSidebar(manifest, null, null);
+  app.focus({ preventScroll: true });
+  window.scrollTo({ top: 0 });
+}
+
+async function showSubject(subjectId) {
+  currentChapter = null;
+  if (!manifest) manifest = await api.manifest();
+  const subj = (manifest.subjects || []).find(s => s.id === subjectId);
+  document.title = `${subj ? subj.name : "বিষয়"} | ${manifest.site.title}`;
+  app.innerHTML = R.renderSubjectView(subjectId, manifest);
+  sidebarContent.innerHTML = R.renderSidebar(manifest, null, null, subjectId);
   app.focus({ preventScroll: true });
   window.scrollTo({ top: 0 });
 }

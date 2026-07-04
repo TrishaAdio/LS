@@ -2,6 +2,11 @@
   "meta": {
     "id": "ch04",
     "slug": "abhibyakti-o-abhijojon",
+    "subjectId": "life-science",
+    "subject": "জীবন বিজ্ঞান",
+    "subjectEn": "Life Science",
+    "subjectIcon": "leaf",
+    "subjectAccent": "#10b981",
     "number": 4,
     "title": "অভিব্যক্তি ও অভিযোজন",
     "titleEn": "Evolution and Adaptation",

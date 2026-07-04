@@ -27,12 +27,18 @@ const icon = {
 /* ============================================================
    HOME VIEW
    ============================================================ */
-export function renderHome(manifest) {
-  const chapters = manifest.chapters || [];
-  const totalTopics = chapters.reduce((a, c) => a + (c.topicCount || 0), 0);
-  const cards = chapters.map((c) => {
-    const pct = progress.percent(c.slug, c.topicCount || 0);
-    return `
+const subjectSvg = {
+  leaf: `<svg viewBox="0 0 24 24" width="30" height="30"><path d="M5 21c0-8 5-14 14-14 0 9-6 14-14 14z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 17c3-4 6-6 9-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+  scroll: `<svg viewBox="0 0 24 24" width="30" height="30"><path d="M6 4h11a2 2 0 012 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8h7M9 12h7M9 16h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M6 4a2 2 0 00-2 2v0a2 2 0 002 2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>`,
+  atom: `<svg viewBox="0 0 24 24" width="30" height="30"><circle cx="12" cy="12" r="2.4" fill="currentColor"/><ellipse cx="12" cy="12" rx="10" ry="4.4" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="12" cy="12" rx="10" ry="4.4" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.4" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(120 12 12)"/></svg>`,
+  globe: `<svg viewBox="0 0 24 24" width="30" height="30"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`,
+  sigma: `<svg viewBox="0 0 24 24" width="30" height="30"><path d="M7 5h10M7 5l6 7-6 7h10" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/></svg>`,
+};
+
+/* Single chapter card (used inside a subject's chapter list). */
+function chapterCard(c) {
+  const pct = progress.percent(c.slug, c.topicCount || 0);
+  return `
     <a class="chapter-card" href="#/chapter/${esc(c.slug)}" data-link>
       <div class="chapter-card__top">
         <div class="chapter-card__num">${esc(c.number ?? "•")}</div>
@@ -49,25 +55,45 @@ export function renderHome(manifest) {
       <div class="chapter-card__progress"><i style="width:${pct}%"></i></div>
       <div class="chapter-card__en" style="margin-top:6px">${pct}% পড়া হয়েছে</div>
     </a>`;
-  }).join("");
+}
+
+/* HOME = subject picker. */
+export function renderHome(manifest) {
+  const subjects = manifest.subjects || [];
+  const chapters = manifest.chapters || [];
+  const totalTopics = chapters.reduce((a, c) => a + (c.topicCount || 0), 0);
+
+  const subjectCards = subjects.map((s) => `
+    <a class="subject-card" href="#/subject/${esc(s.id)}" data-link style="--sub-accent:${esc(s.accent || "var(--accent)")}">
+      <div class="subject-card__icon">${subjectSvg[s.icon] || subjectSvg.scroll}</div>
+      <div class="subject-card__body">
+        <h3>${esc(s.name)}</h3>
+        <div class="subject-card__en">${esc(s.nameEn || "")}</div>
+        <div class="subject-card__foot">
+          <span class="chip">${esc(s.chapterCount || 0)} অধ্যায়</span>
+          <span class="chip">${esc(s.topicCount || 0)} টপিক</span>
+        </div>
+      </div>
+      <svg class="subject-card__arrow" viewBox="0 0 24 24" width="22" height="22"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>`).join("");
 
   return `
   <div class="view">
     <section class="hero">
-      <span class="hero__badge">${icon.spark} WBBSE · মাধ্যমিক</span>
+      <span class="hero__badge">${icon.spark} ${esc(manifest.site.board || "WBBSE · মাধ্যমিক")}</span>
       <h1>${esc(manifest.site.title)}</h1>
-      <p>${esc(manifest.site.tagline)} — টেক্সটবুকের চেয়ে সহজ, কোচিং নোটের চেয়ে সম্পূর্ণ। প্রতিটি ধারণা সহজ বাংলায়, উদাহরণ, ছবি ও পরীক্ষার প্রশ্নসহ।</p>
+      <p>${esc(manifest.site.tagline)} — প্রতিটি বিষয় সহজ বাংলায়, উদাহরণ, ছবি ও পরীক্ষার প্রশ্নসহ। একটা বিষয়ে ক্লিক করে অধ্যায়গুলো দেখো।</p>
       <div class="hero__stats">
+        <div class="hero__stat"><b>${subjects.length}</b><span>বিষয়</span></div>
         <div class="hero__stat"><b>${chapters.length}</b><span>অধ্যায়</span></div>
         <div class="hero__stat"><b>${totalTopics}</b><span>টপিক</span></div>
-        <div class="hero__stat"><b>১০০%</b><span>বাংলায়</span></div>
       </div>
     </section>
 
     ${renderResume()}
 
-    <h2 class="section-title"><span class="bar"></span> অধ্যায়সমূহ</h2>
-    <div class="card-grid">${cards || emptyState("এখনও কোনো অধ্যায় যোগ করা হয়নি।")}</div>
+    <h2 class="section-title"><span class="bar"></span> বিষয় বেছে নাও</h2>
+    <div class="subject-grid">${subjectCards || emptyState("এখনও কোনো বিষয় যোগ করা হয়নি।")}</div>
 
     <h2 class="section-title"><span class="bar"></span> কীভাবে ব্যবহার করবে</h2>
     <div class="card-grid">
@@ -75,6 +101,30 @@ export function renderHome(manifest) {
       ${featureCard(icon.target, "অনুশীলন", "প্রতি অধ্যায়ে MCQ, সংক্ষিপ্ত ও বড় প্রশ্ন — উত্তর ও ব্যাখ্যাসহ। নিজেকে যাচাই করো।")}
       ${featureCard(icon.brain, "রিভিশন", "শেষ মুহূর্তের রিভিশন, মূল সংজ্ঞা ও মনে রাখার কৌশল এক জায়গায়।")}
     </div>
+  </div>`;
+}
+
+/* SUBJECT view = the chapters/topics inside one subject. */
+export function renderSubjectView(subjectId, manifest) {
+  const subject = (manifest.subjects || []).find((s) => s.id === subjectId);
+  const chapters = (manifest.chapters || []).filter((c) => c.subjectId === subjectId);
+  if (!subject) {
+    return `<div class="view"><div class="empty"><p>এই বিষয়টি খুঁজে পাওয়া যায়নি।</p><a class="btn btn--primary" href="#/" data-link>হোমে ফিরুন</a></div></div>`;
+  }
+  const cards = chapters.map(chapterCard).join("");
+  return `
+  <div class="view">
+    <div class="chapter-head">
+      <nav class="breadcrumb"><a href="#/" data-link>হোম</a> <span>›</span> <span>${esc(subject.name)}</span></nav>
+      <h1>${esc(subject.name)}</h1>
+      <div class="chapter-head__en">${esc(subject.nameEn || "")}</div>
+      <div class="chapter-head__meta">
+        <span class="chip chip--accent">${esc(chapters.length)} অধ্যায়</span>
+        <span class="chip">${esc(subject.topicCount || 0)} টপিক</span>
+      </div>
+    </div>
+    <h2 class="section-title"><span class="bar"></span> অধ্যায়সমূহ</h2>
+    <div class="card-grid">${cards || emptyState("এই বিষয়ে এখনও অধ্যায় যোগ করা হয়নি।")}</div>
   </div>`;
 }
 function renderResume() {
@@ -105,14 +155,21 @@ function emptyState(msg) {
    ============================================================ */
 export function renderChapter(data, manifest) {
   const m = data.meta;
+  const chEntry = (manifest.chapters || []).find((c) => c.slug === m.slug) || {};
+  const subjectId = m.subjectId || chEntry.subjectId;
+  const subjectName = m.subject || chEntry.subject;
   const topicsHtml = (data.topics || []).map((t, i) => renderTopic(t, i, m.slug)).join(
     `<div class="topic-divider"><span>◆</span></div>`
   );
 
+  const crumbSubject = subjectId
+    ? `<a href="#/subject/${esc(subjectId)}" data-link>${esc(subjectName || "বিষয়")}</a> <span>›</span> `
+    : "";
+
   return `
   <div class="view">
     <div class="chapter-head">
-      <nav class="breadcrumb"><a href="#/" data-link>হোম</a> <span>›</span> <span>অধ্যায় ${esc(m.number)}</span></nav>
+      <nav class="breadcrumb"><a href="#/" data-link>হোম</a> <span>›</span> ${crumbSubject}<span>অধ্যায় ${esc(m.number)}</span></nav>
       <h1>${esc(m.title)}</h1>
       <div class="chapter-head__en">${esc(m.titleEn || "")}</div>
       <div class="chapter-head__meta">
@@ -544,13 +601,19 @@ export function renderRevision(rev, slug) {
    CHAPTER PREV/NEXT NAV
    ============================================================ */
 function renderChapterNav(m, manifest) {
-  const list = manifest.chapters || [];
+  const all = manifest.chapters || [];
+  const current = all.find(c => c.slug === m.slug);
+  const sid = (current && current.subjectId) || m.subjectId;
+  // Keep prev/next within the same subject.
+  const list = all.filter(c => c.subjectId === sid);
   const idx = list.findIndex(c => c.slug === m.slug);
   const prev = idx > 0 ? list[idx - 1] : null;
   const next = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : null;
+  const backHref = sid ? `#/subject/${esc(sid)}` : "#/";
+  const backLabel = sid ? "বিষয়ে ফিরুন" : "হোমে ফিরুন";
   return `
   <div class="chapter-nav">
-    ${prev ? `<a href="#/chapter/${esc(prev.slug)}" data-link><div><div class="chapter-nav__label">← আগের অধ্যায়</div><div class="chapter-nav__title">${esc(prev.title)}</div></div></a>` : `<a href="#/" data-link><div><div class="chapter-nav__label">←</div><div class="chapter-nav__title">হোমে ফিরুন</div></div></a>`}
+    ${prev ? `<a href="#/chapter/${esc(prev.slug)}" data-link><div><div class="chapter-nav__label">← আগের অধ্যায়</div><div class="chapter-nav__title">${esc(prev.title)}</div></div></a>` : `<a href="${backHref}" data-link><div><div class="chapter-nav__label">←</div><div class="chapter-nav__title">${backLabel}</div></div></a>`}
     ${next ? `<a class="next" href="#/chapter/${esc(next.slug)}" data-link><div><div class="chapter-nav__label">পরের অধ্যায় →</div><div class="chapter-nav__title">${esc(next.title)}</div></div></a>` : ""}
   </div>`;
 }
@@ -558,19 +621,46 @@ function renderChapterNav(m, manifest) {
 /* ============================================================
    SIDEBAR
    ============================================================ */
-export function renderSidebar(manifest, activeSlug, chapterData) {
+export function renderSidebar(manifest, activeSlug, chapterData, activeSubjectId) {
   const chapters = manifest.chapters || [];
-  const chapList = chapters.map(c => {
-    const active = c.slug === activeSlug;
-    return `
-    <a class="chap-link ${active ? "active" : ""}" href="#/chapter/${esc(c.slug)}" data-link>
-      <span class="chap-link__num">${esc(c.number ?? "•")}</span>
+  const subjects = manifest.subjects || [];
+
+  // Which subject are we in? (from an open chapter, or an open subject view)
+  const activeChapter = chapters.find(c => c.slug === activeSlug);
+  const curSubjectId = (chapterData && chapterData.meta && chapterData.meta.subjectId)
+    || (activeChapter && activeChapter.subjectId)
+    || activeSubjectId
+    || null;
+
+  // Subjects list (always shown).
+  const subjectList = subjects.map(s => `
+    <a class="chap-link chap-link--subject ${s.id === curSubjectId && !chapterData ? "active" : ""}" href="#/subject/${esc(s.id)}" data-link>
+      <span class="chap-link__num" style="color:${esc(s.accent || "var(--accent)")}">${subjectSvg[s.icon] || "•"}</span>
       <span class="chap-link__body">
-        <span class="chap-link__title">${esc(c.title)}</span>
-        <span class="chap-link__meta">${esc(c.topicCount || 0)} টপিক · গুরুত্ব ${esc(c.importance || "—")}</span>
+        <span class="chap-link__title">${esc(s.name)}</span>
+        <span class="chap-link__meta">${esc(s.chapterCount || 0)} অধ্যায় · ${esc(s.topicCount || 0)} টপিক</span>
       </span>
-    </a>`;
-  }).join("");
+    </a>`).join("");
+
+  // Sibling chapters within the current subject (shown when inside a subject/chapter).
+  let siblingChapters = "";
+  if (curSubjectId) {
+    const sibs = chapters.filter(c => c.subjectId === curSubjectId);
+    if (sibs.length) {
+      siblingChapters = `
+      <div class="side-section">
+        <div class="side-title">এই বিষয়ের অধ্যায়</div>
+        ${sibs.map(c => `
+        <a class="chap-link ${c.slug === activeSlug ? "active" : ""}" href="#/chapter/${esc(c.slug)}" data-link>
+          <span class="chap-link__num">${esc(c.number ?? "•")}</span>
+          <span class="chap-link__body">
+            <span class="chap-link__title">${esc(c.title)}</span>
+            <span class="chap-link__meta">${esc(c.topicCount || 0)} টপিক · গুরুত্ব ${esc(c.importance || "—")}</span>
+          </span>
+        </a>`).join("")}
+      </div>`;
+    }
+  }
 
   let toc = "";
   if (chapterData) {
@@ -598,8 +688,9 @@ export function renderSidebar(manifest, activeSlug, chapterData) {
 
   return `
   ${toc}
+  ${siblingChapters}
   <div class="side-section">
-    <div class="side-title">সব অধ্যায়</div>
-    ${chapList}
+    <div class="side-title">সব বিষয়</div>
+    ${subjectList}
   </div>`;
 }

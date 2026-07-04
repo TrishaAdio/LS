@@ -101,16 +101,43 @@ def load_manifest() -> dict:
                     "topicCount": len(data.get("topics", [])),
                     "estimatedMinutes": meta.get("estimatedMinutes"),
                     "importance": meta.get("importance"),
+                    # Subject grouping (defaults keep old single-subject content working).
+                    "subjectId": meta.get("subjectId", "life-science"),
+                    "subject": meta.get("subject", "জীবন বিজ্ঞান"),
+                    "subjectEn": meta.get("subjectEn", "Life Science"),
+                    "subjectIcon": meta.get("subjectIcon", "leaf"),
+                    "subjectAccent": meta.get("subjectAccent", "#10b981"),
                 }
             )
     chapters.sort(key=lambda c: (c.get("number") is None, c.get("number")))
+
+    # Build the subjects index (home page groups by subject).
+    subjects: dict[str, dict] = {}
+    order: list[str] = []
+    for c in chapters:
+        sid = c["subjectId"]
+        if sid not in subjects:
+            order.append(sid)
+            subjects[sid] = {
+                "id": sid,
+                "name": c["subject"],
+                "nameEn": c["subjectEn"],
+                "icon": c["subjectIcon"],
+                "accent": c["subjectAccent"],
+                "chapterCount": 0,
+                "topicCount": 0,
+            }
+        subjects[sid]["chapterCount"] += 1
+        subjects[sid]["topicCount"] += c.get("topicCount") or 0
+
     return {
         "site": {
-            "title": "মাধ্যমিক জীবনবিজ্ঞান",
-            "titleEn": "Madhyamik Life Science",
-            "board": "WBBSE",
-            "tagline": "সহজ ভাষায়, গভীর বোঝাপড়া",
+            "title": "Ani's Study Hub",
+            "titleEn": "Ani's Study Hub",
+            "board": "WBBSE · মাধ্যমিক",
+            "tagline": "এক জায়গায় সব বিষয় — সহজ ভাষায়, গভীর বোঝাপড়া",
         },
+        "subjects": [subjects[s] for s in order],
         "chapters": chapters,
     }
 
