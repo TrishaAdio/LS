@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/liquid-glass.css') }}" />
 </head>
 <body>
   <!-- Reading progress bar -->
@@ -143,6 +144,17 @@
 
   <!-- Toast -->
   <div class="toast" id="toast" hidden></div>
+
+  <!-- iOS 26 "Liquid Glass" refraction filter (progressive, Chromium-only) -->
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute;pointer-events:none">
+    <defs>
+      <filter id="lg-distortion" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="7" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="1.2" result="blurred" />
+        <feDisplacementMap in="SourceGraphic" in2="blurred" scale="12" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
 
   <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
   <script src="{{ url_for('static', filename='js/track.js') }}"></script>
