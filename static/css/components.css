@@ -798,3 +798,27 @@ body.focus-mode #topics-root:hover .topic:hover { opacity: 1; filter: none; }
 /* subject entries in the sidebar */
 .chap-link--subject .chap-link__num { display: grid; place-items: center; }
 .chap-link--subject .chap-link__num svg { width: 20px; height: 20px; }
+
+
+/* =========================================================================
+   PER-TOPIC MCQ QUIZ (self-check after each topic) + exam source tags
+   ========================================================================= */
+.topic-quiz {
+  margin-top: var(--sp-5); padding: var(--sp-4) var(--sp-4) var(--sp-2);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 6%, var(--surface)), var(--surface));
+  border: 1px solid var(--border); border-left: 4px solid var(--accent);
+}
+.topic-quiz__head {
+  font-family: var(--font-display); font-weight: 800; font-size: var(--fs-md);
+  color: var(--accent-strong); margin-bottom: 2px;
+}
+.topic-quiz__hint { font-size: var(--fs-sm); color: var(--text-mute); margin-bottom: var(--sp-3); }
+
+/* exam-source tag on an MCQ (e.g. মাধ্যমিক '১৮) */
+.mcq__source {
+  display: inline-block; margin: 2px 0 10px 34px;
+  font-family: var(--font-en); font-size: var(--fs-xs); font-weight: 600;
+  color: var(--c-purple); background: var(--c-purple-soft);
+  padding: 2px 9px; border-radius: var(--r-full);
+}

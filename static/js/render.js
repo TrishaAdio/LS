@@ -226,7 +226,18 @@ function renderTopic(t, i, slug) {
       </button>
     </div>
     ${(t.blocks || []).map(renderBlock).join("")}
+    ${(t.mcqs && t.mcqs.length) ? renderTopicQuiz(t.mcqs) : ""}
   </section>`;
+}
+
+// Per-topic self-check MCQ quiz (rendered right after a topic's content).
+function renderTopicQuiz(mcqs) {
+  return `
+  <div class="topic-quiz">
+    <div class="topic-quiz__head">📝 নিজেকে যাচাই করো — MCQ</div>
+    <div class="topic-quiz__hint">অপশনে ক্লিক করে উত্তর মিলিয়ে নাও।</div>
+    ${mcqs.map((q, i) => renderMCQ(q, i)).join("")}
+  </div>`;
 }
 
 /* ============================================================
@@ -526,6 +537,7 @@ function renderMCQ(q, i) {
   return `
   <div class="mcq" data-mcq="${i}" data-answer="${q.answer}">
     <div class="mcq__q"><span class="mcq__n">${i + 1}</span><p>${esc(q.q)}</p><span class="mcq__level ${lvl}">${esc(q.level || "")}</span></div>
+    ${q.source ? `<div class="mcq__source">${esc(q.source)}</div>` : ""}
     <div class="mcq__options">
       ${q.options.map((opt, j) => `
         <button class="mcq-opt" data-opt="${j}"><span class="mcq-opt__key">${String.fromCharCode(2453 + j)}</span><span>${esc(opt)}</span></button>`).join("")}
